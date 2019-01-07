@@ -1,0 +1,429 @@
+---
+title: "Exploring the BRFSS data"
+author: "Kyle Harris"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+    df_print: paged
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(ggpubr)
+library(gridExtra)
+library(scales)
+```
+
+### Load data
+
+Make sure your data and R Markdown files are in the same directory. When loaded
+your data file will be called `brfss2013`. Delete this note when before you submit 
+your work. 
+
+```{r load-data}
+load("brfss2013.RData")
+```
+
+
+
+* * *
+
+## Part 1: Data
+
+The Behavioral Risk Factor Surveillance System (BRFSS) is a project by the Center for Disease Control and Prevention (CDC) and United State territories. These territories include the 50 states, District of Columbia, Guam, and Puerto Rico. The objective can be brilliantly noted from the BRFSS code book, "The BRFSS objective is to collect uniform, state-specific data on preventive health practices and risk behaviors that are linked to chronic diseases, injuries, and preventable infectious diseases that affect the adult population. Factors assessed by the BRFSS in 2013 include tobacco use, HIV/AIDS knowledge and prevention, exercise, immunization, health status, healthy days — health-related quality of life, health care access, inadequate sleep, hypertension awareness, cholesterol awareness, chronic health conditions, alcohol consumption, fruits and vegetables consumption, arthritis burden, and seat belt use. Since 2011, BRFSS conducts both land line telephone- and cellular telephone-based surveys". [BRFSS Codebook](https://d18ky98rnyall9.cloudfront.net/_e34476fda339107329fc316d1f98e042_brfss_codebook.html?Expires=1546732800&Signature=SJOyYchcC6I1i0V5DJzc2zNIWFtX~ZZ6RVuQtnUBMH9QaXun29NOPPFrYD5sDVmOxRX0cYiN0sj3WGS3paGxCU1Qv5n1gI0xFh-9py-d4YpPW8aDeJJSFZsOwUxIjeDYAabQtvizujb1CpaQG2oam6Ojr43MhgLUTAjnIpTuyHI_&Key-Pair-Id=APKAJLTNE6QMUY6HBC5A)
+
+I believe this is hard to generalize for all those who resides in these states, states referring to the 50 states and the other territories. The data are collected from through either a land line telephone or a cellular telephones. These phone numbers were selected at random from those who are adults, adults being age 18+. The adults are the target population for looking at health trends. The randomly selected phones also must reside in a private residence or in college housing. Thus, this generalization comes from the population described above. There is no causality due to this being an observational study.
+
+
+* * *
+
+## Part 2: Research questions
+
+**Research question 1:**
+
+Is there a time of year where the interview is not coded as fully completed? Would months with more holidays result in a change of completed interviews? Looking further into this, is there a state that sticks out for these cases?
+
+*Variables of interest:* iyear, imonth, dispcode, X_state
+
+**Research question 2:**
+
+What is the distribution of states in the data? Looking at general health per state, which 10 states have the most count per category of general health?
+
+*Variables of interest:* X_state, genhlth
+
+**Research question 3:**
+
+Does the amount adults in the household OR race effect health care coverage?
+
+*Variables of interest:* numadult, X_race, hlthpln1
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
+button (green button with orange arrow) above. Make sure that your code is visible
+in the project you submit. Delete this note when before you submit your work.
+
+**Research question 1:**
+
+Is there a time of year where the interview is not coded as fully completed? Would months with more holidays result in a change of completed interviews? Looking further into this, is there a state that sticks out for these cases?
+
+*Variables of interest:* iyear, imonth, dispcode, X_state
+
+#### Select Variables of Interest
+
+To reduce the size of data we are working with I will select only the columns we are interested and rename the columns so they are easier to work with.
+
+```{r}
+raw_rq1 <- brfss2013 %>%
+  select('year' = iyear, 'month' = imonth, dispcode, 'state' = X_state)
+```
+
+#### Variable Exploration
+
+```{r}
+summary(raw_rq1)
+```
+
+Looking at year, month, and dispcode we can see there are missing data. These will be removed later to assure we are working with complete cases.
+
+I want to make sure we are only looking at the expected 50 states, District of Columbia, Guam, and Puerto Rico.
+
+```{r}
+raw_rq1 %>% count(state)
+```
+
+We are expecting 53 values, however there are 55 in the table. Scrolling through the table we find 2 unexpected values; 0 and 80. 0 and 80 are not in the [State FIPS list](https://www.mcc.co.mercer.pa.us/dps/state_fips_code_listing.htm). Thus, these will be removed.
+
+#### Final Clean Data for Research Question 1
+
+```{r}
+rq1 <- raw_rq1 %>%
+  filter(!is.na(year),
+         !is.na(month),
+         !is.na(dispcode),
+         state != '0',
+         state != '80')
+```
+
+Confirmation all NAs were removed:
+
+```{r}
+sum(is.na(rq1))
+```
+
+#### Exploration
+
+I have chosen to use the **zoo** library to utilize the yearmon function. yearmon gives a year and month combo a numeric value which makes it easy for plotting across time.
+
+```{r, message=F}
+library(zoo)
+rq1 <- rq1 %>%
+  mutate(yearMon = as.yearmon(paste(year,month), '%Y %B'))
+```
+yearMon = as.yearmon(paste(year,month), '%Y %B')
+```{r}
+rq1_summary <- rq1 %>%
+  group_by(year, month, dispcode) %>%
+  summarise(count = n()) %>%
+  mutate(proportion = count / sum(count)) %>%
+  ungroup() %>%
+  mutate(yearMon = as.yearmon(paste(year,month), '%Y %B'))
+
+rq1_summary
+```
+
+
+```{r}
+ggplot(rq1_summary, aes(yearMon, count, color = dispcode)) +
+  geom_line() +
+  scale_x_yearmon(n=20) +
+  rotate_x_text(45) +
+  labs(x = 'Year Month', y = 'Count', title = 'Count of dispcode Across Time')
+```
+
+Looking at the counts of interviews we can see there is a lot more complete interviews VS partially completed. Most counts for completed interviews are between 30,000 and 40,000. Partially interviewed follow the same count around 5,000. After 2013 the drop severely drops. The data is called 2013, so I am not sure why 2014 data is in here and after seeing these lower than normal counts I am not sure we can trust the 2014 data. Without having a domain expert or someone familiar with these data I will keep it in for the rest of the analysis.
+
+Looking at proportion of interviews completed and partially completed will help us compare the two groups.
+
+```{r}
+ggplot(rq1_summary, aes(yearMon, proportion, color = dispcode)) +
+  geom_line() +
+  scale_x_yearmon(n=20) +
+  rotate_x_text(45) +
+  labs(x = 'Year Month', y = 'Proportion', title = 'Proportion of dispcode Across Time')
+```
+
+Excluding the 2014 data, the proportions are consistent. It is interesting to see that about 12% of interviews are constantly partially completed. 12% Can contribute to a lot of rows with missing data. It would be great to see this number decrease.
+
+Lets look at state. We will need to make a new summary to include state. We will be exploring dispcode by state.
+
+```{r}
+rq1_summary2 <- rq1 %>%
+  group_by(state, dispcode) %>%
+  summarise(count = n()) %>%
+  mutate(proportion = count / sum(count)) %>%
+  filter(dispcode == 'Partially completed interview')
+
+rq1_summary2
+```
+
+In our research question we are interested in partially completed interviews. It would be hard to interpret a plot with 53 lines, one per state. Thus we will look
+
+```{r}
+ggplot(rq1_summary2, aes(reorder(state, - proportion), proportion)) +
+  geom_col() +
+  rotate_x_text(90) +
+  labs(x = 'States', y = 'Proportion', title = '% of Partially Completed Interviews')
+```
+
+Higher % is not better in this plot. A higher % means more interviews were not complete. In California 1 in 4 interviews will be partially completed. We can see that there is not a constant % of partially completed across the states. 3 states have good low rates of partially completed; West Virginia, Tennessee, and Puerto Rico. I believe this is an interesting question to investigate further, why is the variability of % among partially completed interviews so high?
+
+We saw interview status is constant in 2013. However, when looking at the percentage of partially completed interviews there is not a constant result per state. There is a strong view for some states having low percentage of partially completed interviews Vs. those who have high percentage.
+
+---
+
+**Research question 2:**
+
+What is the distribution of states in the data? Looking at general health per state, which 10 states have the most count per category of general health?
+
+*Variables of interest:* X_state, genhlth
+
+#### Select Variables of Interest
+
+```{r}
+raw_rq2 <- brfss2013 %>%
+  select('state' = X_state, genhlth)
+```
+
+#### Variable Exploration
+
+```{r}
+summary(raw_rq2)
+```
+
+There is missing data in genhlth. We will remove these data and remove the state data like we did earlier.
+
+#### Final Clean Data for Research Question 2
+
+```{r}
+rq2 <- raw_rq2 %>%
+  filter(!is.na(genhlth),
+         state != '0',
+         state != '80')
+```
+
+Confirmation all NAs were removed:
+
+```{r}
+sum(is.na(rq2))
+```
+
+#### Exploration
+
+Before looking at count of states that contribute the most data points, I expect the states that have larger populations to contribute more observations.
+
+```{r}
+rq2 %>%
+  count(state) %>%
+  arrange(desc(n))
+```
+
+```{r}
+rq2 %>%
+  count(state) %>%
+  arrange(desc(n)) %>%
+  ggplot(aes(reorder(state, -n), n)) +
+  geom_col() +
+  rotate_x_text(90) +
+  labs(x = 'States', y = 'Count', title = 'Count of States')
+```
+
+I mentioned I expected larger states to have more observations in the data such as Texas, California, and New York. We can see there are 10 unexpected states, some of which are small in size and population!
+
+**Top 10 States Per General Health Category**
+
+```{r}
+rq2_summary <- rq2 %>%
+  count(state, genhlth) %>%
+  group_by(state) %>%
+  mutate(p = n/sum(n)) %>%
+  group_by(genhlth) %>%
+  # top_n(10, p) %>%
+  arrange(genhlth, desc(p))
+
+rq2_summary
+```
+
+```{r}
+ggplot(rq2_summary, aes(p, fill = genhlth)) +
+  geom_density(alpha = .6) +
+  labs(x = 'Proportion', y = 'Density', title = 'Distribution of Proportions Per General Health')
+```
+
+Looking at the shape of each general health category we can see all of them relatively follow a normal distribution besides Poor. We can look at this graphic and see what is shown in the table. In order to most common to least common proportions per general health category:
+1. Very Good
+2. Good
+3. Excellent
+4. Fair
+5. Poor
+
+Is it good to see that fair is the lowest ranked? Poor has roughly 10%, 10% of a population is 100,000's people that consider their health as poor. That's not good. Now lets look at the top 10 per category.
+
+```{r}
+rq2_top <- rq2_summary %>%
+  top_n(10, p)
+
+rq2_top
+```
+
+```{r}
+p1 <- rq2_top %>%
+  filter(genhlth == 'Excellent') %>%
+  ggplot(aes(reorder(state, p), p)) +
+  geom_col(fill = "#00D134", color = 'black') +
+  coord_flip() +
+  labs(x = 'State', title = 'Top 10 Excellent') +
+  font('y.text', size = 6) +
+  rremove('xlab')
+
+p2 <- rq2_top %>%
+  filter(genhlth == 'Very good') %>%
+  ggplot(aes(reorder(state, p), p)) +
+  geom_col(fill = "#8EEB46", color = 'black') +
+  coord_flip() +
+  labs(x = 'State', title = 'Top 10 Very Good') +
+  font('y.text', size = 6) +
+  rremove('xylab')
+
+p3 <- rq2_top %>%
+  filter(genhlth == 'Good') %>%
+  ggplot(aes(reorder(state, p), p)) +
+  geom_col(fill = "#D6E620", color = 'black') +
+  coord_flip() +
+  labs(x = 'State', title = 'Top 10 Good') +
+  font('y.text', size = 6) +
+  rremove('xlab')
+
+p4 <- rq2_top %>%
+  filter(genhlth == 'Fair') %>%
+  ggplot(aes(reorder(state, p), p)) +
+  geom_col(fill = "#FFBB00", color = 'black') +
+  coord_flip() +
+  labs(y = 'Proportion', title = 'Top 10 Fair') +
+  font('y.text', size = 6) +
+  rremove('ylab')
+
+p5 <- rq2_top %>%
+  filter(genhlth == 'Poor') %>%
+  ggplot(aes(reorder(state, p), p)) +
+  geom_col(fill = "#CF4343", color = 'black') +
+  coord_flip() +
+  labs(x = 'State', y = 'Proportion', title = 'Top 10 Poor') +
+  font('y.text', size = 6)
+
+grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
+```
+
+Here we can see the top 10 states per general health. There can be a lot to say about each category but I am interesting in identifying the countries that stray away from the rest of the states. In excellent the District of Columbia has 25% of interviewees that rate their health that high. Very good does not have an abnormal state in the top 10. For good Guam and Hawaii stand out. For fair and looks like an outlier in this case is Puerto Rico. Above 10% of people from Tennessee and Mississippi considered their health as poor.
+
+**Research question 3:**
+
+Does the amount adults in the household OR race effect health care coverage?
+
+*Variables of interest:* numadult, X_race, hlthpln1
+
+#### Select Variables of Interest
+
+```{r}
+raw_rq3 <- brfss2013 %>%
+  select('num_adult' = numadult, 'race' = X_race, 'health_plan' = hlthpln1)
+```
+
+#### Variable Exploration
+
+```{r}
+summary(raw_rq3)
+```
+
+We want to work with complete observations with the variables we have selected. We will remove 138259 observations, each of these observations have at least one NA value.
+
+#### Final Clean Data for Research Question 3
+
+```{r}
+rq3 <- raw_rq3 %>%
+  na.omit()
+```
+
+Confirmation all NAs were removed:
+
+```{r}
+sum(is.na(rq3))
+```
+
+#### Exploration
+
+**Adults in the Household and Health Plans**
+
+```{r}
+adult <- rq3 %>%
+  count(health_plan, num_adult) %>%
+  group_by(num_adult) %>%
+  mutate(p = n/sum(n))
+
+adult
+```
+
+```{r}
+ggplot(adult, aes(num_adult, n, fill = health_plan)) +
+  geom_col() +
+  labs(x = 'Number of Adults in Household', y = 'Count', title = 'Count of Adults in Household Size with Health Plans')
+```
+
+Looking at this plot we can see which number of adults in household is most common. Two, one, three, and so on are the most common. After a household size of 7 the sample appears very small. Looking at the table above there is less than 100 interviewees that had a household size of 7. At a household size of 8 there are 34 observations with complete data.
+
+```{r}
+ggplot(adult, aes(num_adult, p, fill = health_plan)) +
+  geom_col() +
+  labs(x = 'Number of Adults in Household', y = 'Proportion', title = 'Proportion of Adults in Household Size with Health Plans')
+```
+
+This is an interesting find! As household size increases from 1 to 7 the proportion of interviewees that are not on a health plan increase!
+
+**Race and Health Plans**
+
+```{r}
+race <- rq3 %>%
+  count(health_plan, race) %>%
+  group_by(race) %>%
+  mutate(p = n/sum(n))
+
+race
+```
+
+```{r}
+ggplot(race, aes(reorder(race, n), n, fill = health_plan)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = comma) +
+  labs(x = 'Race', y = 'Count', title = 'Count of Race with Health Plans')
+```
+
+Looking at the count per race we can see what race is the most common within our data. This data consists of mostly 'White only, non-Hispanic'. Following that factor 'Black only, non-Hispanic' and 'Hispanic' are the noticeable races that have a health plan pattern. This is based solely on this bar chart and it is used to show the distribution of race. 
+
+```{r}
+ggplot(race, aes(race, p, fill = health_plan)) +
+  geom_col() +
+  coord_flip() +
+  labs(x = 'Race', y = 'Proportion', title = 'Proportion of Race with Health Plans')
+```
+
+The two standouts here are 'Hispanic' and 'Native Hawaiian..' who have roughly 25% of interviewees not having a health plan. A possible next step for this question is to maybe collapse the races into a smaller group size and run a chi-square test to see if there is a statistically significant difference between race for health plan coverage.
