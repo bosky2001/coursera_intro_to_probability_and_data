@@ -48,21 +48,21 @@ I believe this is hard to generalize for all those who resides in these states, 
 
 **Research question 1:**
 
-Is there a time of year where the interview is not coded as fully completed? Would months with more holidays result in a change of completed interviews? Looking further into this, is there a state that sticks out for these cases?
+What is relation between income and education level of our  
 
-*Variables of interest:* iyear, imonth, dispcode, X_state
+Variables Required: income2, educa
 
 **Research question 2:**
 
 What is the distribution of states in the data? Looking at general health per state, which 10 states have the most count per category of general health?
 
-*Variables of interest:* X_state, genhlth
+Variables Required: X_state, genhlth
 
 **Research question 3:**
 
 Does the amount adults in the household OR race effect health care coverage?
 
-*Variables of interest:* numadult, X_race, hlthpln1
+Variables Required: numadult, X_race, hlthpln1
 
 * * *
 
@@ -76,7 +76,7 @@ in the project you submit. Delete this note when before you submit your work.
 
 Is there a time of year where the interview is not coded as fully completed? Would months with more holidays result in a change of completed interviews? Looking further into this, is there a state that sticks out for these cases?
 
-*Variables of interest:* iyear, imonth, dispcode, X_state
+Variables Required: income2, educa
 
 #### Select Variables of Interest
 
