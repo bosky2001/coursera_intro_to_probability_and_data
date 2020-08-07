@@ -1,6 +1,6 @@
 ---
 title: "Exploring the BRFSS data"
-author: "Kyle Harris"
+author: "Raghavesh Viswanath"
 output: 
   html_document: 
     fig_height: 4
@@ -60,9 +60,9 @@ Variables Required: sleptim1, addepev2
 
 **Research question 3:**
 
-Does the amount adults in the household OR race effect health care coverage?
+Is there a correlation between being a veteran and poor physical or mental health, and can an association between both aforementioned variables and binge drinking be inferred?
 
-Variables Required: numadult, X_race, hlthpln1
+Variables Required: veteran3,poorhlth 
 
 * * *
 
@@ -217,7 +217,7 @@ up_dep<- SLD_clean %>%
 Filtering the data to get what we need using the piping operations
 #### Exploration
 
-Before looking at count of states that contribute the most data points, I expect the states that have larger populations to contribute more observations.
+Plotting the data to make inferences.
 
 ```{r}
 ggplot(data=up_dep,aes(x=addepev2,y=count))+geom_bar(stat="identity",color='blue',fill='green')+xlab("Depressive Order for people having <7 hours of sleep?")+ylab("Number of Respondents")
@@ -225,94 +225,39 @@ ggplot(data=up_dep,aes(x=addepev2,y=count))+geom_bar(stat="identity",color='blue
 As normal Human Beings require atleast 7 hours of sleep daily, i wanted to know if less sleep than usual would lead to them having depressive disorder(pretty far fetched thought) Results indicate that majority dont report having a depressive disorder.
 
 **Research question 3:**
+Is there a correlation between being a veteran and poor physical or mental health?
 
-Does the amount adults in the household OR race effect health care coverage?
-
-*Variables of interest:* numadult, X_race, hlthpln1
+Variables Required: veteran3, poorhlth
 
 #### Select Variables of Interest
-
+Filtering out rows containing NA as they are useless.
 ```{r}
-raw_rq3 <- brfss2013 %>%
-  select('num_adult' = numadult, 'race' = X_race, 'health_plan' = hlthpln1)
+q2tbl <- brfss2013 %>% filter(!(is.na(veteran3)), !(is.na(poorhlth)))
 ```
 
 #### Variable Exploration
 
 ```{r}
-summary(raw_rq3)
+q2tbl <- q2tbl %>% mutate(poorhlth = ifelse(poorhlth > 7, "8+", poorhlth))
+q2tbl$poorhlth <- factor(q2tbl$poorhlth)
 ```
-
-We want to work with complete observations with the variables we have selected. We will remove 138259 observations, each of these observations have at least one NA value.
-
-#### Final Clean Data for Research Question 3
+In the statistics above, we generalize days binge drank in the last month exceeding a week as '8+' to indicate excessive binge drinking. The summary statistics illustrate a choppy normal distribution of proportions of veterans binge drinking, with the distribution fluctuating up and down independent from the number of days binge drank, hinting at a possible correlation.
 
 ```{r}
-rq3 <- raw_rq3 %>%
-  na.omit()
+q2tbl %>% group_by(poorhlth, veteran3) %>% summarize(count=n())
 ```
 
-Confirmation all NAs were removed:
 
-```{r}
-sum(is.na(rq3))
-```
 
 #### Exploration
 
-**Adults in the Household and Health Plans**
 
 ```{r}
-adult <- rq3 %>%
-  count(health_plan, num_adult) %>%
-  group_by(num_adult) %>%
-  mutate(p = n/sum(n))
+library("viridis")
+q2plt <- ggplot(q2tbl) + aes(x = veteran3, fill = poorhlth) + geom_bar(position = "fill")+scale_color_viridis(option = "D")
+q2plt <- q2plt +  + xlab("Veteran, ) + ylab("Relative Proportion")+  scale_color_viridis(discrete = TRUE, option = "D")+ scale_fill_viridis(discrete = TRUE)
+q2plt
 
-adult
 ```
+The plot illustrates a normal distribution for no days of poor health across 0 through 8+ days spent binge drinking in the last month and a an increasing linear trend for poor health across the same range Moreover, there were proportionately less veterans than non-veterans who reported little to no days of poor health consistently across 0 through 8+ days spent binge drinking and proportionately more veterans who reported more days of poor health than non-veterans consistent across the same range. This trend indicates that there is a strong correlation between being a veteran, poor physical or mental health, and binge drinking.
 
-```{r}
-ggplot(adult, aes(num_adult, n, fill = health_plan)) +
-  geom_col() +
-  labs(x = 'Number of Adults in Household', y = 'Count', title = 'Count of Adults in Household Size with Health Plans')
-```
-
-Looking at this plot we can see which number of adults in household is most common. Two, one, three, and so on are the most common. After a household size of 7 the sample appears very small. Looking at the table above there is less than 100 interviewees that had a household size of 7. At a household size of 8 there are 34 observations with complete data.
-
-```{r}
-ggplot(adult, aes(num_adult, p, fill = health_plan)) +
-  geom_col() +
-  labs(x = 'Number of Adults in Household', y = 'Proportion', title = 'Proportion of Adults in Household Size with Health Plans')
-```
-
-This is an interesting find! As household size increases from 1 to 7 the proportion of interviewees that are not on a health plan increase!
-
-**Race and Health Plans**
-
-```{r}
-race <- rq3 %>%
-  count(health_plan, race) %>%
-  group_by(race) %>%
-  mutate(p = n/sum(n))
-
-race
-```
-
-```{r}
-ggplot(race, aes(reorder(race, n), n, fill = health_plan)) +
-  geom_col() +
-  coord_flip() +
-  scale_y_continuous(labels = comma) +
-  labs(x = 'Race', y = 'Count', title = 'Count of Race with Health Plans')
-```
-
-Looking at the count per race we can see what race is the most common within our data. This data consists of mostly 'White only, non-Hispanic'. Following that factor 'Black only, non-Hispanic' and 'Hispanic' are the noticeable races that have a health plan pattern. This is based solely on this bar chart and it is used to show the distribution of race. 
-
-```{r}
-ggplot(race, aes(race, p, fill = health_plan)) +
-  geom_col() +
-  coord_flip() +
-  labs(x = 'Race', y = 'Proportion', title = 'Proportion of Race with Health Plans')
-```
-
-The two standouts here are 'Hispanic' and 'Native Hawaiian..' who have roughly 25% of interviewees not having a health plan. A possible next step for this question is to maybe collapse the races into a smaller group size and run a chi-square test to see if there is a statistically significant difference between race for health plan coverage.
