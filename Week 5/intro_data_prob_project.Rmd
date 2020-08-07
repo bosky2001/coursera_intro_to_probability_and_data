@@ -54,9 +54,9 @@ Variables Required: income2, educa
 
 **Research question 2:**
 
-What is the distribution of states in the data? Looking at general health per state, which 10 states have the most count per category of general health?
+One of the first research question involves how sleeptime of an US citizen have any affects on chronic health condition specifically depressive disorder, specifically for those category of people who sleep for less than 7 hours.
 
-Variables Required: X_state, genhlth
+Variables Required: sleptim1, addepev2
 
 **Research question 3:**
 
@@ -83,8 +83,10 @@ Variables Required: income2, educa
 To reduce the size of data we are working with I will select only the columns we are interested and rename the columns so they are easier to work with.
 
 ```{r}
-raw_rq1 <- brfss2013 %>%
-  select('year' = iyear, 'month' = imonth, dispcode, 'state' = X_state)
+q1<-brfss2013 %>%
+  select('Income' = income2, 'Education Level' = educa) %>% filter(!is.na(income2) & !is.na(educa))
+T1<-table(q1)
+T1<-data.frame(T1)
 ```
 
 #### Variable Exploration
@@ -193,147 +195,34 @@ We saw interview status is constant in 2013. However, when looking at the percen
 
 **Research question 2:**
 
-What is the distribution of states in the data? Looking at general health per state, which 10 states have the most count per category of general health?
+One of the first research question involves how sleeptime of an US citizen have any affects on chronic health condition specifically depressive disorder, specifically for those category of people who sleep for less than 7 hours.
 
-*Variables of interest:* X_state, genhlth
+Variables Required: sleptim1, addepev2
 
 #### Select Variables of Interest
 
 ```{r}
-raw_rq2 <- brfss2013 %>%
-  select('state' = X_state, genhlth)
+SLD <- dataframe(brfss2013$sleptim1,brfss2013$addepev2)
 ```
 
 #### Variable Exploration
 
 ```{r}
-summary(raw_rq2)
+SLD_clean<-na.omit(SLD)
+up_dep<- SLD_clean %>%
+  filter(sleptim1<5) %>%
+  group_by(addepev2) %>%
+  summarise(count=n())
 ```
-
-There is missing data in genhlth. We will remove these data and remove the state data like we did earlier.
-
-#### Final Clean Data for Research Question 2
-
-```{r}
-rq2 <- raw_rq2 %>%
-  filter(!is.na(genhlth),
-         state != '0',
-         state != '80')
-```
-
-Confirmation all NAs were removed:
-
-```{r}
-sum(is.na(rq2))
-```
-
+Filtering the data to get what we need using the piping operations
 #### Exploration
 
 Before looking at count of states that contribute the most data points, I expect the states that have larger populations to contribute more observations.
 
 ```{r}
-rq2 %>%
-  count(state) %>%
-  arrange(desc(n))
+ggplot(data=up_dep,aes(x=addepev2,y=count))+geom_bar(stat="identity",color='blue',fill='green')+xlab("Depressive Order for people having <7 hours of sleep?")+ylab("Number of Respondents")
 ```
-
-```{r}
-rq2 %>%
-  count(state) %>%
-  arrange(desc(n)) %>%
-  ggplot(aes(reorder(state, -n), n)) +
-  geom_col() +
-  rotate_x_text(90) +
-  labs(x = 'States', y = 'Count', title = 'Count of States')
-```
-
-I mentioned I expected larger states to have more observations in the data such as Texas, California, and New York. We can see there are 10 unexpected states, some of which are small in size and population!
-
-**Top 10 States Per General Health Category**
-
-```{r}
-rq2_summary <- rq2 %>%
-  count(state, genhlth) %>%
-  group_by(state) %>%
-  mutate(p = n/sum(n)) %>%
-  group_by(genhlth) %>%
-  # top_n(10, p) %>%
-  arrange(genhlth, desc(p))
-
-rq2_summary
-```
-
-```{r}
-ggplot(rq2_summary, aes(p, fill = genhlth)) +
-  geom_density(alpha = .6) +
-  labs(x = 'Proportion', y = 'Density', title = 'Distribution of Proportions Per General Health')
-```
-
-Looking at the shape of each general health category we can see all of them relatively follow a normal distribution besides Poor. We can look at this graphic and see what is shown in the table. In order to most common to least common proportions per general health category:
-1. Very Good
-2. Good
-3. Excellent
-4. Fair
-5. Poor
-
-Is it good to see that fair is the lowest ranked? Poor has roughly 10%, 10% of a population is 100,000's people that consider their health as poor. That's not good. Now lets look at the top 10 per category.
-
-```{r}
-rq2_top <- rq2_summary %>%
-  top_n(10, p)
-
-rq2_top
-```
-
-```{r}
-p1 <- rq2_top %>%
-  filter(genhlth == 'Excellent') %>%
-  ggplot(aes(reorder(state, p), p)) +
-  geom_col(fill = "#00D134", color = 'black') +
-  coord_flip() +
-  labs(x = 'State', title = 'Top 10 Excellent') +
-  font('y.text', size = 6) +
-  rremove('xlab')
-
-p2 <- rq2_top %>%
-  filter(genhlth == 'Very good') %>%
-  ggplot(aes(reorder(state, p), p)) +
-  geom_col(fill = "#8EEB46", color = 'black') +
-  coord_flip() +
-  labs(x = 'State', title = 'Top 10 Very Good') +
-  font('y.text', size = 6) +
-  rremove('xylab')
-
-p3 <- rq2_top %>%
-  filter(genhlth == 'Good') %>%
-  ggplot(aes(reorder(state, p), p)) +
-  geom_col(fill = "#D6E620", color = 'black') +
-  coord_flip() +
-  labs(x = 'State', title = 'Top 10 Good') +
-  font('y.text', size = 6) +
-  rremove('xlab')
-
-p4 <- rq2_top %>%
-  filter(genhlth == 'Fair') %>%
-  ggplot(aes(reorder(state, p), p)) +
-  geom_col(fill = "#FFBB00", color = 'black') +
-  coord_flip() +
-  labs(y = 'Proportion', title = 'Top 10 Fair') +
-  font('y.text', size = 6) +
-  rremove('ylab')
-
-p5 <- rq2_top %>%
-  filter(genhlth == 'Poor') %>%
-  ggplot(aes(reorder(state, p), p)) +
-  geom_col(fill = "#CF4343", color = 'black') +
-  coord_flip() +
-  labs(x = 'State', y = 'Proportion', title = 'Top 10 Poor') +
-  font('y.text', size = 6)
-
-grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
-```
-
-Here we can see the top 10 states per general health. There can be a lot to say about each category but I am interesting in identifying the countries that stray away from the rest of the states. In excellent the District of Columbia has 25% of interviewees that rate their health that high. Very good does not have an abnormal state in the top 10. For good Guam and Hawaii stand out. For fair and looks like an outlier in this case is Puerto Rico. Above 10% of people from Tennessee and Mississippi considered their health as poor.
+As normal Human Beings require atleast 7 hours of sleep daily, i wanted to know if less sleep than usual would lead to them having depressive disorder(pretty far fetched thought) Results indicate that majority dont report having a depressive disorder.
 
 **Research question 3:**
 
