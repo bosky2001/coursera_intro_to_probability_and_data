@@ -37,10 +37,17 @@ load("brfss2013.RData")
 
 ## Part 1: Data
 
-The Behavioral Risk Factor Surveillance System (BRFSS) is a project by the Center for Disease Control and Prevention (CDC) and United State territories. These territories include the 50 states, District of Columbia, Guam, and Puerto Rico. The objective can be brilliantly noted from the BRFSS code book, "The BRFSS objective is to collect uniform, state-specific data on preventive health practices and risk behaviors that are linked to chronic diseases, injuries, and preventable infectious diseases that affect the adult population. Factors assessed by the BRFSS in 2013 include tobacco use, HIV/AIDS knowledge and prevention, exercise, immunization, health status, healthy days — health-related quality of life, health care access, inadequate sleep, hypertension awareness, cholesterol awareness, chronic health conditions, alcohol consumption, fruits and vegetables consumption, arthritis burden, and seat belt use. Since 2011, BRFSS conducts both land line telephone- and cellular telephone-based surveys". [BRFSS Codebook](https://d18ky98rnyall9.cloudfront.net/_e34476fda339107329fc316d1f98e042_brfss_codebook.html?Expires=1546732800&Signature=SJOyYchcC6I1i0V5DJzc2zNIWFtX~ZZ6RVuQtnUBMH9QaXun29NOPPFrYD5sDVmOxRX0cYiN0sj3WGS3paGxCU1Qv5n1gI0xFh-9py-d4YpPW8aDeJJSFZsOwUxIjeDYAabQtvizujb1CpaQG2oam6Ojr43MhgLUTAjnIpTuyHI_&Key-Pair-Id=APKAJLTNE6QMUY6HBC5A)
+#### Data Collection Process
 
-I believe this is hard to generalize for all those who resides in these states, states referring to the 50 states and the other territories. The data are collected from through either a land line telephone or a cellular telephones. These phone numbers were selected at random from those who are adults, adults being age 18+. The adults are the target population for looking at health trends. The randomly selected phones also must reside in a private residence or in college housing. Thus, this generalization comes from the population described above. There is no causality due to this being an observational study.
+Spanning 50 U.S. states, the District of Columbia, and three U.S. territories, more than 400,000 adult BRFSS surveys are conducted each year. A randomly sampled adult from each participating household fills out a survey regarding health-related risk behaviors and events, chronic health conditions, and use of preventive services in order to gauge emerging health issues. Surveys are conducted over the phone, which leads to my concern that those in poverty unable to afford a landline/cell phone are unable to participate in the survey and moreover are potentially more at-risk due to not being able to afford health services, which could potentially skew the results of the questionnaire.
 
+#### Generalizable Results
+
+The data was gathered randomly sampling an adult from each household or residence. The study is observational because the researchers merely collected data without interfering; the researchers asked a questionnaire instead of overseeing an experiment. Therefore, we can infer from the observational nature of the study and the fact that participants were randomly sampled that the study's results are generalizable. 
+
+#### Non-causal Results
+
+No random assignment was used when gathering data as participants were never assigned into groups after being sampled. Therefore, we can further infer that the results of the study are non-causal and only correlation statements can be made using the results.
 
 * * *
 
@@ -48,7 +55,7 @@ I believe this is hard to generalize for all those who resides in these states, 
 
 **Research question 1:**
 
-What is relation between income and education level of our  
+What is relation between income and education level of our  respondents?
 
 Variables Required: income2, educa
 
@@ -80,13 +87,21 @@ Variables Required: income2, educa
 
 #### Select Variables of Interest
 
-To reduce the size of data we are working with I will select only the columns we are interested and rename the columns so they are easier to work with.
-
+Filtering out the data to work with our variables of interest
 ```{r}
 q1<-data.frame(Income=brfss2013$income2, EducationLevel=brfss2013$educa)
 T1<-table(q1)
 T1<-data.frame(T1)
-unique(T1$EEducationLevel)
+```
+
+#### Variable Exploration
+Getiing rid of all rows containing NA values as they contribute nothing to making inferences.
+```{r}
+T1<-na.omit(T1)
+unique(T1$EducationLevel)
+```
+Seperating the data in 6 seperate data frames, where each one corresponds to respective Education Level and adding a Proportion Variable which will later be used to represent the frequency distribution using a pie-chart.
+```{r}
 H1<-subset(T1,T1$EducationLevel="Never attended school or only kindergarten")
 H1<-cbind(H1,Prop=H1$Freq/colSums(H1[,3,drop=FALSE]))
 
@@ -104,136 +119,49 @@ H5<-cbind(H5,Prop=H5$Freq/colSums(H5[,3,drop=FALSE]))
 
 H6<-subset(T1,T1$EducationLevel="College 4 years or more (College graduate)")
 H6<-cbind(H6,Prop=H6$Freq/colSums(H6[,3,drop=FALSE]))
-
-windows()
-par(mfrow=c(2,3))
-
-g1<-ggplot(H1,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D")
-g1+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
-
-
-g2<-ggplot(H2,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D")
-g2+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
-
-
-g3<-ggplot(H3,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D")
-g3+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
-
-
-g4<-ggplot(H4,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D")
-g4+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
-
-
-g5<-ggplot(H5,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D")
-g5+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
-
-
-g6<-ggplot(H6,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D")
-g6+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 ```
 
-#### Variable Exploration
-
-```{r}
-summary(raw_rq1)
-```
-
-Looking at year, month, and dispcode we can see there are missing data. These will be removed later to assure we are working with complete cases.
-
-I want to make sure we are only looking at the expected 50 states, District of Columbia, Guam, and Puerto Rico.
-
-```{r}
-raw_rq1 %>% count(state)
-```
 
 We are expecting 53 values, however there are 55 in the table. Scrolling through the table we find 2 unexpected values; 0 and 80. 0 and 80 are not in the [State FIPS list](https://www.mcc.co.mercer.pa.us/dps/state_fips_code_listing.htm). Thus, these will be removed.
 
-#### Final Clean Data for Research Question 1
 
-```{r}
-rq1 <- raw_rq1 %>%
-  filter(!is.na(year),
-         !is.na(month),
-         !is.na(dispcode),
-         state != '0',
-         state != '80')
-```
-
-Confirmation all NAs were removed:
-
-```{r}
-sum(is.na(rq1))
-```
 
 #### Exploration
 
-I have chosen to use the **zoo** library to utilize the yearmon function. yearmon gives a year and month combo a numeric value which makes it easy for plotting across time.
+I've chosen the viridis Color palette to represent the distribution in the pie-chart and allotocating grid space for the 6 pie-chart to be plotted.
 
 ```{r, message=F}
-library(zoo)
-rq1 <- rq1 %>%
-  mutate(yearMon = as.yearmon(paste(year,month), '%Y %B'))
+windows()
+par(mfrow=c(2,3))
+library("viridis")
 ```
-yearMon = as.yearmon(paste(year,month), '%Y %B')
+Now ,plotting the corresponding pie-chart to make inferences
 ```{r}
-rq1_summary <- rq1 %>%
-  group_by(year, month, dispcode) %>%
-  summarise(count = n()) %>%
-  mutate(proportion = count / sum(count)) %>%
-  ungroup() %>%
-  mutate(yearMon = as.yearmon(paste(year,month), '%Y %B'))
+g1<-ggplot(H1,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g1+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
-rq1_summary
+
+g2<-ggplot(H2,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g2+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
+
+
+g3<-ggplot(H3,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g3+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
+
+
+g4<-ggplot(H4,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g4+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
+
+
+g5<-ggplot(H5,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g5+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
+
+
+g6<-ggplot(H6,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g6+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 ```
 
-
-```{r}
-ggplot(rq1_summary, aes(yearMon, count, color = dispcode)) +
-  geom_line() +
-  scale_x_yearmon(n=20) +
-  rotate_x_text(45) +
-  labs(x = 'Year Month', y = 'Count', title = 'Count of dispcode Across Time')
-```
-
-Looking at the counts of interviews we can see there is a lot more complete interviews VS partially completed. Most counts for completed interviews are between 30,000 and 40,000. Partially interviewed follow the same count around 5,000. After 2013 the drop severely drops. The data is called 2013, so I am not sure why 2014 data is in here and after seeing these lower than normal counts I am not sure we can trust the 2014 data. Without having a domain expert or someone familiar with these data I will keep it in for the rest of the analysis.
-
-Looking at proportion of interviews completed and partially completed will help us compare the two groups.
-
-```{r}
-ggplot(rq1_summary, aes(yearMon, proportion, color = dispcode)) +
-  geom_line() +
-  scale_x_yearmon(n=20) +
-  rotate_x_text(45) +
-  labs(x = 'Year Month', y = 'Proportion', title = 'Proportion of dispcode Across Time')
-```
-
-Excluding the 2014 data, the proportions are consistent. It is interesting to see that about 12% of interviews are constantly partially completed. 12% Can contribute to a lot of rows with missing data. It would be great to see this number decrease.
-
-Lets look at state. We will need to make a new summary to include state. We will be exploring dispcode by state.
-
-```{r}
-rq1_summary2 <- rq1 %>%
-  group_by(state, dispcode) %>%
-  summarise(count = n()) %>%
-  mutate(proportion = count / sum(count)) %>%
-  filter(dispcode == 'Partially completed interview')
-
-rq1_summary2
-```
-
-In our research question we are interested in partially completed interviews. It would be hard to interpret a plot with 53 lines, one per state. Thus we will look
-
-```{r}
-ggplot(rq1_summary2, aes(reorder(state, - proportion), proportion)) +
-  geom_col() +
-  rotate_x_text(90) +
-  labs(x = 'States', y = 'Proportion', title = '% of Partially Completed Interviews')
-```
-
-Higher % is not better in this plot. A higher % means more interviews were not complete. In California 1 in 4 interviews will be partially completed. We can see that there is not a constant % of partially completed across the states. 3 states have good low rates of partially completed; West Virginia, Tennessee, and Puerto Rico. I believe this is an interesting question to investigate further, why is the variability of % among partially completed interviews so high?
-
-We saw interview status is constant in 2013. However, when looking at the percentage of partially completed interviews there is not a constant result per state. There is a strong view for some states having low percentage of partially completed interviews Vs. those who have high percentage.
-
+We see from the pie-charts that as education level increases, you have more of chance of getting paid the big bucks. This is'nt something unexpected though, it just reiterates the fact that Higher Education is more likely to  provide you with High income than other means.
 ---
 
 **Research question 2:**
