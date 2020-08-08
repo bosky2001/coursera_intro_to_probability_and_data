@@ -141,23 +141,23 @@ g1<-ggplot(H1,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + 
 g1+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
 
-g2<-ggplot(H2,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g2<-ggplot(H2,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Grades 1 through 8 (Elementary)")
 g2+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
 
-g3<-ggplot(H3,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g3<-ggplot(H3,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Grades 9 though 11 (Some high school)")
 g3+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
 
-g4<-ggplot(H4,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g4<-ggplot(H4,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Grade 12 or GED (High school graduate)")
 g4+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
 
-g5<-ggplot(H5,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g5<-ggplot(H5,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("College 1 year to 3 years (Some college or technical school)")
 g5+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
 
-g6<-ggplot(H6,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
+g6<-ggplot(H6,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("College 4 years or more (College graduate)")
 g6+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 ```
 
