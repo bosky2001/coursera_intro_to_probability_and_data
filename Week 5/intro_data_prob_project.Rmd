@@ -212,7 +212,7 @@ q2tbl <- brfss2013 %>% filter(!(is.na(veteran3)), !(is.na(poorhlth)))
 q2tbl <- q2tbl %>% mutate(poorhlth = ifelse(poorhlth > 7, "8+", poorhlth))
 q2tbl$poorhlth <- factor(q2tbl$poorhlth)
 ```
-In the statistics above, we generalize days binge drank in the last month exceeding a week as '8+' to indicate excessive binge drinking. The summary statistics illustrate a choppy normal distribution of proportions of veterans binge drinking, with the distribution fluctuating up and down independent from the number of days binge drank, hinting at a possible correlation.
+
 
 ```{r}
 q2tbl %>% group_by(poorhlth, veteran3) %>% summarize(count=n())
@@ -230,5 +230,5 @@ q2plt <- q2plt +  + xlab("Veteran, ) + ylab("Relative Proportion")+  scale_color
 q2plt
 
 ```
-The plot illustrates a normal distribution for no days of poor health across 0 through 8+ days spent binge drinking in the last month and a an increasing linear trend for poor health across the same range Moreover, there were proportionately less veterans than non-veterans who reported little to no days of poor health consistently across 0 through 8+ days spent binge drinking and proportionately more veterans who reported more days of poor health than non-veterans consistent across the same range. This trend indicates that there is a strong correlation between being a veteran, poor physical or mental health, and binge drinking.
+The plot illustrates a normal distribution for no days of poor health across 0 through 8+ days spent in the last month . Moreover, proportionately more veterans who reported more days of poor health than non-veterans consistent across the same range. This trend indicates that there is a strong correlation between being a veteran, poor physical or mental health.
 
