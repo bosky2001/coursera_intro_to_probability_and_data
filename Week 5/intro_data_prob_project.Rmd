@@ -19,6 +19,7 @@ library(dplyr)
 library(ggpubr)
 library(gridExtra)
 library(scales)
+library(cowplot)
 ```
 
 ### Load data
@@ -138,27 +139,28 @@ library("viridis")
 Now ,plotting the corresponding pie-chart to make inferences
 ```{r}
 g1<-ggplot(H1,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Never attended school or only kindergarten")
-g1+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
+G1<-g1+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
 
 g2<-ggplot(H2,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Grades 1 through 8 (Elementary)")
-g2+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
+G2<-g2+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
 
 g3<-ggplot(H3,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Grades 9 though 11 (Some high school)")
-g3+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
+G3<-g3+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
 
 g4<-ggplot(H4,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("Grade 12 or GED (High school graduate)")
-g4+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
+G4<-g4+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
 
 g5<-ggplot(H5,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("College 1 year to 3 years (Some college or technical school)")
-g5+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
+G5<-g5+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
 
 
 g6<-ggplot(H6,aes(x="",y=Prop,fill=Income))+scale_color_viridis(option = "D") + ggtitle("College 4 years or more (College graduate)")
-g6+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE) 
+G6<-g6+geom_bar(stat="identity",color="white")+coord_polar("y",start=0)+theme_void()+scale_color_viridis(discrete = TRUE, option = "D")+scale_fill_viridis(discrete = TRUE)
+plot_grid(G1,G2,G3,G4,G5,G6,nrow=2,ncol=3)
 ```
 
 We see from the pie-charts that as education level increases, you have more of chance of getting paid the big bucks. This is'nt something unexpected though, it just reiterates the fact that Higher Education is more likely to  provide you with High income than other means.
