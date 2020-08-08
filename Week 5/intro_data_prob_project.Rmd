@@ -103,22 +103,22 @@ unique(T1$EducationLevel)
 ```
 Seperating the data in 6 seperate data frames, where each one corresponds to respective Education Level and adding a Proportion Variable which will later be used to represent the frequency distribution using a pie-chart.
 ```{r}
-H1<-subset(T1,T1$EducationLevel="Never attended school or only kindergarten")
+H1<-subset(T1,T1$EducationLevel=="Never attended school or only kindergarten")
 H1<-cbind(H1,Prop=H1$Freq/colSums(H1[,3,drop=FALSE]))
 
-H2<-subset(T1,T1$EducationLevel="Grades 1 through 8 (Elementary)")
+H2<-subset(T1,T1$EducationLevel=="Grades 1 through 8 (Elementary)")
 H2<-cbind(H2,Prop=H2$Freq/colSums(H2[,3,drop=FALSE]))
 
-H3<-subset(T1,T1$EducationLevel="Grades 9 though 11 (Some high school)")
+H3<-subset(T1,T1$EducationLevel=="Grades 9 though 11 (Some high school)")
 H3<-cbind(H3,Prop=H3$Freq/colSums(H3[,3,drop=FALSE]))
 
-H4<-subset(T1,T1$EducationLevel="Grade 12 or GED (High school graduate)")
+H4<-subset(T1,T1$EducationLevel=="Grade 12 or GED (High school graduate)")
 H4<-cbind(H4,Prop=H4$Freq/colSums(H4[,3,drop=FALSE]))
 
-H5<-subset(T1,T1$EducationLevel="College 1 year to 3 years (Some college or technical school)")
+H5<-subset(T1,T1$EducationLevel=="College 1 year to 3 years (Some college or technical school)")
 H5<-cbind(H5,Prop=H5$Freq/colSums(H5[,3,drop=FALSE]))
 
-H6<-subset(T1,T1$EducationLevel="College 4 years or more (College graduate)")
+H6<-subset(T1,T1$EducationLevel=="College 4 years or more (College graduate)")
 H6<-cbind(H6,Prop=H6$Freq/colSums(H6[,3,drop=FALSE]))
 ```
 
